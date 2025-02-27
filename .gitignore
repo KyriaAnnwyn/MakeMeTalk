@@ -1,0 +1,41 @@
+# Envirmoment
+
+.venv/
+.env
+
+
+# Trash
+__pycache__
+.pytest_cache/
+.coverage
+dist/
+build/
+tmp/
+deploy/*/*.retry
+*.iml
+.DS_Store
+*.log
+logs
+!logs/*-sample.log
+*.pickle
+$RECYCLE.BIN/
+*.bkp
+.ipynb_checkpoints
+
+# IDE
+.vscode
+.idea
+
+.checkpoints
+.data
+.legacy
+
+.storage/
+
+xformers/
+*.safetensors
+*.safetensors.*
+*.onnx
+checkpoints/
+pretrained_weights/
+models/
