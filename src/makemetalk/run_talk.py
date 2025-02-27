@@ -8,7 +8,7 @@ from fluxgenerator import FluxGenerator, modify_postpic_prompt
 from speechanimator import setup_ffmpeg, SpeechAnimator
 from promptmodifier import PromptModifier
 
-#PROMPT = "portrait photo of a person"
+from openai_appearance import get_appearance
 
 from huggingface_hub import login
 access_token_read = os.getenv("HUGGINGFACE_ACCESS_TOKEN_READ")
@@ -39,7 +39,7 @@ prompt_modifier = PromptModifier(config_flux.device)
 id_embeddings, uncond_id_embeddings, gender = generator.generate_avatar_embedding(src_folder=args.id_images_path)
 appearance = ""
 if config_flux.use_appearance:
-    appearance = get_appearance(id_image=id_image_path)
+    appearance = get_appearance(id_image=args.id_images_path)
 
 #p = modify_postpic_prompt(prompt=PROMPT, gender=gender, appearance=appearance)
 

@@ -374,7 +374,16 @@ def get_prompt_post(app_dict: dict) -> str:
 
 def get_appearance(id_image):
     appearance_embeddings = []
-    for idimg in id_image:
+    image_path_list = id_image
+    if isinstance(id_image, str):
+        image_basename_list = os.listdir(id_image)
+        image_path_list = sorted([os.path.join(id_image, basename) for basename in image_basename_list 
+                                        if ".jpeg" in basename.lower() 
+                                        or ".jpg" in basename.lower() 
+                                        or ".png" in basename.lower() 
+                                        or ".webp" in basename.lower()
+                                        or ".avif" in basename.lower()])
+    for idimg in image_path_list:
         dt = get_description(idimg)
         appearance_embeddings.append(dt)
     appearance_emb = appearance_mean(appearance_embeddings)
