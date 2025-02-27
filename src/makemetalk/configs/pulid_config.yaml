@@ -1,0 +1,9 @@
+version: "v0.9.1"
+name: "flux-dev"
+device: "cuda"
+offload: false
+aggressive_offload: false
+fp8: true
+onnx_provider: "cpu"
+use_appearance: false
+pretrained_model: null
