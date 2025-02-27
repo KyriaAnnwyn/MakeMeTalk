@@ -9,6 +9,8 @@ from fluxgenerator import FluxGenerator, modify_postpic_prompt
 from speechanimator import setup_ffmpeg, SpeechAnimator
 from promptmodifier import PromptModifier
 
+from openai_appearance import get_appearance
+
 DEFAULT_NEGATIVE_PROMPT = (
     'flaws in the eyes, flaws in the face, flaws, lowres, non-HDRi, low quality, worst quality,'
     'artifacts noise, text, watermark, glitch, deformed, mutated, ugly, disfigured, hands, '
@@ -26,12 +28,50 @@ class InterfaceModel():
         self.speech_generator = None #SpeechAnimator(config_echo)
         self.prompt_modifier = None #PromptModifier(config_flux.device)
 
+        self.appearance = ""
+        self.id_embeddings = None
+        self.uncond_id_embeddings = None 
+        self.gender = None
+
     def dummy_avatar_generator(self, *args):
         src_list = []
-        for el in args:
+        for el in args[:-1]:
             if el is not None:
                 src_list.append(el)
-        return f"Avatar generated for {len(src_list)} reference images"
+        use_appearance =args[-1]
+
+        return f"Avatar generated for {len(src_list)} reference images. Use_appearance = {use_appearance}"
+    
+    def dummy_video_generator(self, *args):
+        user_prompt = args[0]
+
+        return f"Video generated with user prompt = {user_prompt}"
+    
+    def avatar_generator(self, *args):
+        src_list = []
+        for el in args[:-1]:
+            if el is not None:
+                src_list.append(el)
+        use_appearance =args[-1]
+
+        self.id_embeddings, self.uncond_id_embeddings, self.gender = self.generator.generate_avatar_embedding(src_folder=src_list)
+
+        if use_appearance:
+            self.appearance = get_appearance(id_image=src_list)
+
+        return f"Avatar generated for {len(src_list)} reference images. Use_appearance = {use_appearance}"
+    
+    def video_generator(self, *args):
+        user_prompt = args[0]
+
+        p = self.prompt_modifier.make_prompt(gender=self.gender, user_prompt=user_prompt, appearance=self.appearance)
+        out_image, used_seed, intermediate = self.generator.generate_by_embeddings(
+                        prompt=p,
+                        id_embeddings=self.id_embeddings, 
+                        uncond_id_embeddings=self.uncond_id_embeddings
+            )
+        self.speech_generator.run(out_image, args.in_audio_path, args.out_fpath)
+        return f"Video generated"
 
     def create_demo(self, args):
 
@@ -53,9 +93,10 @@ class InterfaceModel():
                                     face_image = gr.Image(key=i, label=f"ID image {i}", sources="upload", type="numpy", height=256)
                                     face_images.append(face_image)
 
+                        inputs = face_images + [use_appearance]
                         submit_avatar.click(
                             self.dummy_avatar_generator, 
-                            face_images, 
+                            inputs, 
                             output
                             )
         
@@ -86,14 +127,14 @@ class InterfaceModel():
                                 )
                                 steps = gr.Slider(label="Steps", value=4, minimum=1, maximum=100, step=1)
                                 with gr.Row():
-                                    H = gr.Slider(label="Height", value=1024, minimum=512, maximum=2024, step=64)
-                                    W = gr.Slider(label="Width", value=1024, minimum=512, maximum=2024, step=64)
+                                    H = gr.Slider(label="Height", value=1024, minimum=512, maximum=1280, step=64)
+                                    W = gr.Slider(label="Width", value=1024, minimum=512, maximum=1280, step=64)
                                 with gr.Row():
                                     id_scale = gr.Slider(label="ID scale", minimum=0, maximum=5, step=0.05, value=1.0, interactive=True)
 
                     with gr.Column():
                         out_video = gr.PlayableVideo(label="Output")
-                        spoken_text = gr.Textbox(label="Out text transcription", value='in the city landscape, detailed face', interactive=False)
+                        #spoken_text = gr.Textbox(label="Out text transcription", value='in the city landscape, detailed face', interactive=False)
 
         return demo
 
