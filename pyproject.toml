@@ -49,12 +49,12 @@ omegaconf = "2.3.0"
 av = "11.0.0"
 bitsandbytes = "0.45.2"
 blobfile = "3.0.0"
-inflect = "7.5.0",
-kanjize = "1.5.0",
-phonemizer = "3.3.0",
-sudachidict-full = "20241021",
-sudachipy = "0.6.10",
-soundfile = "0.13.1",
+inflect = "7.5.0"
+kanjize = "1.5.0"
+phonemizer = "3.3.0"
+sudachidict-full = "20241021"
+sudachipy = "0.6.10"
+soundfile = "0.13.1"
 
 
 
