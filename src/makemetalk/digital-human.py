@@ -71,7 +71,16 @@ class InterfaceModel():
         status_str = f"Avatar generated for generated reference image. Appearance = {self.appearance}"
         return image, status_str
 
+
+    def dummy_audio_generator(self, *args):
+        text = args[0]
+        voice_sample = args[1]
+
+        gen_audio = "assets/sample_audio.wav"
+
+        return gen_audio
     
+
     def dummy_video_generator(self, *args):
         user_prompt = args[0]
         video_path = "assets/talking_me_2.mp4"
@@ -172,6 +181,23 @@ class InterfaceModel():
                                     audio = gr.Audio(label="audio file with speech", sources="upload")
                                 else:
                                     text2speak = gr.Textbox(label="Text you want to speak", value='My cat came to me just recently, it was very strange, I was just walking down the street and when I approached the store I saw a black cat, he ran up to me and started purring.', interactive=True)
+                                    submit_gen_audio = gr.Button("Generate Audio for the speech text")
+
+                                    inputs = [text2speak, self.voice_sample]
+                                    submit_gen_audio.click(
+                                        self.dummy_audio_generator, 
+                                        inputs, 
+                                        [audio]
+                                        )
+
+                                    audio = gr.Audio(label="audio file with speech")
+
+                                inputs = [prompt, audio]
+                                submit_video.click(
+                                        self.dummy_video_generator, 
+                                        inputs, 
+                                        [status_vg, out_video]
+                                        )
                             
                             submit_video = gr.Button("Generate story")
 
@@ -196,6 +222,7 @@ class InterfaceModel():
 
                     with gr.Column():
                         out_video = gr.PlayableVideo(label="Output", interactive=False)
+                        status_vg = gr.Textbox(label="Avatar generation status", interactive=False)
 
         return demo
 
