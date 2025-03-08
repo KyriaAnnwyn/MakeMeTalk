@@ -12,6 +12,9 @@ import torchvision
 from einops import rearrange
 from PIL import Image
 
+import cv2
+from moviepy.editor import *
+
 
 def seed_everything(seed):
     import random
@@ -63,6 +66,8 @@ def save_videos_from_pil(pil_images, path, fps=8, audio_path=None):
         stream.width = width
         stream.height = height
 
+        audio_stream = container.add_stream('mp3')
+
         for pil_image in pil_images:
             # pil_image = Image.fromarray(image_arr).convert("RGB")
             av_frame = av.VideoFrame.from_image(pil_image)
@@ -81,6 +86,17 @@ def save_videos_from_pil(pil_images, path, fps=8, audio_path=None):
         )
     else:
         raise ValueError("Unsupported file type. Use .mp4 or .gif.")
+    
+
+def moviepy_save(cv2_images, path, fps=8, audio_path=None):
+    out_frames_codeformer_colorcorrected = [cv2.cvtColor(fr, cv2.COLOR_BGR2RGB) for fr in cv2_images]
+
+    new_clip = ImageSequenceClip(out_frames_codeformer_colorcorrected, fps=fps)
+    audioclip = AudioFileClip(audio_path)
+
+    new_audioclip = CompositeAudioClip([audioclip])
+    new_clip.audio = new_audioclip
+    new_clip.write_videofile(path)
 
 
 def save_videos_grid(videos: torch.Tensor, path: str, audio_path=None, rescale=False, n_rows=6, fps=8):
@@ -101,6 +117,25 @@ def save_videos_grid(videos: torch.Tensor, path: str, audio_path=None, rescale=F
     os.makedirs(os.path.dirname(path), exist_ok=True)
 
     save_videos_from_pil(outputs, path, fps, audio_path=audio_path)
+
+
+def save_videos_grid_moviepy(videos: torch.Tensor, path: str, audio_path=None, rescale=False, n_rows=6, fps=8):
+    videos = rearrange(videos, "b c t h w -> t b c h w")
+    height, width = videos.shape[-2:]
+    outputs = []
+
+    for x in videos:
+        x = torchvision.utils.make_grid(x, nrow=n_rows)  # (c h w)
+        x = x.transpose(0, 1).transpose(1, 2).squeeze(-1)  # (h w c)
+        if rescale:
+            x = (x + 1.0) / 2.0  # -1,1 -> 0,1
+        x = (x * 255).numpy().astype(np.uint8)
+
+        outputs.append(x)
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    moviepy_save(outputs, path, fps, audio_path=audio_path)
 
 
 def read_frames(video_path):

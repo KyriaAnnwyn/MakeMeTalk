@@ -17,7 +17,7 @@ from echomimic_src.models.unet_2d_condition import UNet2DConditionModel
 from echomimic_src.models.unet_3d_echo import EchoUNet3DConditionModel
 from echomimic_src.models.whisper.audio2feature import load_audio_model
 from echomimic_src.pipelines.pipeline_echo_mimic_acc import Audio2VideoPipeline
-from echomimic_src.utils.util import save_videos_grid, crop_and_pad
+from echomimic_src.utils.util import save_videos_grid, save_videos_grid_moviepy, crop_and_pad
 from echomimic_src.models.face_locator import FaceLocator
 from moviepy.editor import VideoFileClip, AudioFileClip
 from facenet_pytorch import MTCNN
@@ -193,7 +193,7 @@ class SpeechAnimator:
         ).videos
 
         video = video
-        save_videos_grid(
+        save_videos_grid_moviepy(
             video,
             out_fpath,
             input_audio_path,

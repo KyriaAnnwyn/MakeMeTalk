@@ -395,15 +395,7 @@ def get_appearance(id_image):
 
 if __name__ == "__main__":
     image_path = "/home/docet/Pictures/PromowomanSources/1638098493_26-koshka-top-p-s-kotom-i-devushkoi-29.jpg"
-    image_path = "/home/docet/Projects/openai_vision/AvatarImgs/Avatar_62/08726ec2-dc34-48c9-9a7d-225ff83077b4.png"
-    image_path = "/home/s.korobkova/TestData/SkinColor/PersonD/2cb36c50-cf2e-4653-9de8-9e44db6d22cf.jpg"
-    #result = get_description_no_scheme(image_path=image_path)
+
     result = get_description(image_path=image_path)
 
     print(result)
-    #print(json.loads(result.model_dump_json()))
-    #dt = json.loads(result.model_dump_json())
-    #dt['face']['skin_colour'] += " skin"
-
-    #res_prompt_add = "".join([value + ", "  for (key, value) in dt['face'].items() if value != '']) + "".join([value + ", "  for (key, value) in dt['body'].items() if value != '']) 
-    #print(res_prompt_add)
