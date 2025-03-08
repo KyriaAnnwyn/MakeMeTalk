@@ -8,6 +8,7 @@ import numpy as np
 from fluxgenerator import FluxGenerator, modify_postpic_prompt
 from speechanimator import setup_ffmpeg, SpeechAnimator
 from promptmodifier import PromptModifier
+from audiogenerator import AudioGenerator
 
 from openai_appearance import get_appearance
 
@@ -37,6 +38,7 @@ class InterfaceModel():
         self.generator = None #FluxGenerator(config_flux.name, config_flux.device, config_flux.offload, config_flux.aggressive_offload, config_flux)
         self.speech_generator = None #SpeechAnimator(config_echo)
         self.prompt_modifier = None #PromptModifier(config_flux.device)
+        self.audio_generator = None #AudioGenerator(config_flux.device)
 
         self.appearance = ""
         self.id_embeddings = None
@@ -72,9 +74,15 @@ class InterfaceModel():
         return image, status_str
 
 
+    def dummy_create_persona(self, *args):
+        bio = args[0]
+        self.voice_sample = args[1]
+        return
+    
+
     def dummy_audio_generator(self, *args):
         text = args[0]
-        voice_sample = args[1]
+        voice_sample = self.voice_sample
 
         gen_audio = "assets/sample_audio.wav"
 
@@ -102,7 +110,38 @@ class InterfaceModel():
 
         return f"Avatar generated for {len(src_list)} reference images. Use_appearance = {use_appearance}"
     
+    def avatar_generator_by_text(self, *args):
+        prompt = args[0]
+        
+        #generate appearance for this prompt
+        self.appearance = ""
+        self.gender = self.prompt_modifier.get_gender_from_prompt(prompt)
+        #enhance prompt + appearance with details
+        p = self.prompt_modifier.make_prompt(gender=self.gender, user_prompt=prompt, appearance=self.appearance)
+        #generate image for this prompt
+        image, _, _ = self.generator.generate_image(
+                        prompt=p
+            )
 
+        #generate face embeddings
+        self.id_embeddings, self.uncond_id_embeddings, self.gender = self.generator.generate_avatar_embedding(src_folder=[image])
+
+        status_str = f"Avatar generated for generated reference image. Appearance = {self.appearance}"
+        return image, status_str
+    
+    def create_persona(self, *args):
+        bio = args[0]
+        self.voice_sample = args[1]
+        self.audio_generator.update_speaker(self.voice_sample)
+
+        return
+    
+    def audio_generator(self, *args):
+        text = args[0]
+
+        gen_audio = self.audio_generator.generate_audio_speech(text=text)
+        return gen_audio
+    
     def video_generator(self, *args):
         user_prompt = args[0]
         in_audio_path = args[1]
@@ -155,6 +194,7 @@ class InterfaceModel():
                         prompt = gr.Textbox(label="Persona description", value='beautiful red thin woman', interactive=True)
                         submit_avatar = gr.Button("Generate Avatar Image and Embedding")
                         output_satus = gr.Textbox(label="Avatar generation status", interactive=False)
+                        output_image = gr.Image(label=f"Genrated ID image", type="numpy", height=256, interactive=False)
 
                         inputs = [prompt]
                         submit_avatar.click(
@@ -162,11 +202,18 @@ class InterfaceModel():
                                 inputs, 
                                 [output_image, output_satus]
                                 )
-                        output_image = gr.Image(label=f"Genrated ID image", type="numpy", height=256, interactive=False)
+                        
 
                 bio = gr.Textbox(label="Your interests, lifestyle, any necessary info about you", value='love cats', interactive=True)
                 voice_sample = gr.Audio(label="audio file with your voice", sources="upload")
                 submit_persona = gr.Button("Generate your Persona")
+
+                inputs = [bio, voice_sample]
+                submit_persona.click(
+                                self.dummy_create_persona, 
+                                inputs, 
+                                []
+                )
                 
             with gr.Group():
                 gr.Markdown(_HEADER_STORY_)
@@ -182,15 +229,14 @@ class InterfaceModel():
                                 else:
                                     text2speak = gr.Textbox(label="Text you want to speak", value='My cat came to me just recently, it was very strange, I was just walking down the street and when I approached the store I saw a black cat, he ran up to me and started purring.', interactive=True)
                                     submit_gen_audio = gr.Button("Generate Audio for the speech text")
+                                    audio = gr.Audio(label="audio file with speech")
 
-                                    inputs = [text2speak, self.voice_sample]
+                                    inputs = [text2speak]
                                     submit_gen_audio.click(
                                         self.dummy_audio_generator, 
                                         inputs, 
                                         [audio]
-                                        )
-
-                                    audio = gr.Audio(label="audio file with speech")
+                                        )          
 
                                 inputs = [prompt, audio]
                                 submit_video.click(
