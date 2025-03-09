@@ -44,4 +44,15 @@ class PromptModifier():
         model_inputs = self.tokenizer.apply_chat_template(messages, add_generation_prompt=True, return_tensors="pt").to(self.device)
         input_length = model_inputs.shape[1]
         generated_ids = self.model.generate(model_inputs, do_sample=False, max_new_tokens=10)
-        return self.tokenizer.batch_decode(generated_ids[:, input_length:], skip_special_tokens=True)[0]
+        result = self.tokenizer.batch_decode(generated_ids[:, input_length:], skip_special_tokens=True)[0]
+        if "female" in result:
+            return "female"
+
+        return "male" 
+
+if __name__ == "__main__":
+    pm = PromptModifier(device = "cuda")
+
+    gender = pm.get_gender_from_prompt(prompt = "beautiful red thin woman")
+
+    print(gender)

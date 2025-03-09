@@ -89,7 +89,7 @@ def save_videos_from_pil(pil_images, path, fps=8, audio_path=None):
     
 
 def moviepy_save(cv2_images, path, fps=8, audio_path=None):
-    out_frames_codeformer_colorcorrected = [cv2.cvtColor(fr, cv2.COLOR_BGR2RGB) for fr in cv2_images]
+    out_frames_codeformer_colorcorrected = cv2_images #[cv2.cvtColor(fr, cv2.COLOR_BGR2RGB) for fr in cv2_images]
 
     new_clip = ImageSequenceClip(out_frames_codeformer_colorcorrected, fps=fps)
     audioclip = AudioFileClip(audio_path)

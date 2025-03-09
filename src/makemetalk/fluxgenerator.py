@@ -231,7 +231,7 @@ class FluxGenerator:
         use_true_cfg = abs(true_cfg - 1.0) > 1e-2
 
         # prepare input
-        print(f"Height = {height}, and in opts {opts.height}")
+        #print(f"Height = {height}, and in opts {opts.height}")
         x = get_noise(
             1,
             opts.height,
