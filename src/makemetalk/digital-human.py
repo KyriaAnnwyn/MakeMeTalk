@@ -4,6 +4,8 @@ from omegaconf import OmegaConf
 import argparse
 import os
 import numpy as np
+import cv2
+import torchaudio
 
 from fluxgenerator import FluxGenerator, modify_postpic_prompt
 from speechanimator import setup_ffmpeg, SpeechAnimator
@@ -39,6 +41,11 @@ class InterfaceModel():
         self.speech_generator = None #SpeechAnimator(config_echo)
         self.prompt_modifier = None #PromptModifier(config_flux.device)
         self.audio_generator = None #AudioGenerator(config_flux.device)
+
+        self.generator = FluxGenerator(config_flux.name, config_flux.device, config_flux.offload, config_flux.aggressive_offload, config_flux)
+        self.speech_generator = SpeechAnimator(config_echo)
+        self.prompt_modifier = PromptModifier(config_flux.device)
+        self.audio_generator = AudioGenerator(config_flux.device)
 
         self.appearance = ""
         self.id_embeddings = None
@@ -97,6 +104,7 @@ class InterfaceModel():
 
 
     def avatar_generator(self, *args):
+        print("Generating avatar from images")
         src_list = []
         for el in args[:-1]:
             if el is not None:
@@ -122,7 +130,7 @@ class InterfaceModel():
         image, _, _ = self.generator.generate_image(
                         prompt=p
             )
-
+        image = np.array(image)
         #generate face embeddings
         self.id_embeddings, self.uncond_id_embeddings, self.gender = self.generator.generate_avatar_embedding(src_folder=[image])
 
@@ -132,11 +140,13 @@ class InterfaceModel():
     def create_persona(self, *args):
         bio = args[0]
         self.voice_sample = args[1]
+        print(f"Loaded voice sample: {type(self.voice_sample)}")
+        torchaudio.save("tmp/voice_sample.wav", self.voice_sample[1], self.voice_sample[0])
         self.audio_generator.update_speaker(self.voice_sample)
 
         return
     
-    def audio_generator(self, *args):
+    def audio_generator_function(self, *args):
         text = args[0]
 
         gen_audio = self.audio_generator.generate_audio_speech(text=text)
@@ -144,7 +154,11 @@ class InterfaceModel():
     
     def video_generator(self, *args):
         user_prompt = args[0]
-        in_audio_path = args[1]
+        #in_audio_path = args[1]
+        in_audio = args[1]
+        os.makedirs("tmp", exist_ok=True)
+        in_audio_path = "tmp/in_audio.wav"
+        torchaudio.save(in_audio_path, in_audio[1], in_audio[0])
         out_fpath = "tmp/my_talking_story.mp4"
         os.makedirs("tmp", exist_ok=True)
 
@@ -182,7 +196,7 @@ class InterfaceModel():
 
                             inputs = face_images + [use_appearance]
                             submit_avatar.click(
-                                self.dummy_avatar_generator, 
+                                self.avatar_generator, #self.dummy_avatar_generator, 
                                 inputs, 
                                 output
                                 )
@@ -192,13 +206,13 @@ class InterfaceModel():
                         output = gr.Textbox(label="Avatar generation status", interactive=False)
                     with gr.Tab("Use description images"):
                         prompt = gr.Textbox(label="Persona description", value='beautiful red thin woman', interactive=True)
-                        submit_avatar = gr.Button("Generate Avatar Image and Embedding")
+                        submit_textavatar = gr.Button("Generate Avatar Image and Embedding")
                         output_satus = gr.Textbox(label="Avatar generation status", interactive=False)
                         output_image = gr.Image(label=f"Genrated ID image", type="numpy", height=256, interactive=False)
 
                         inputs = [prompt]
-                        submit_avatar.click(
-                                self.dummy_avatar_generator_by_text, 
+                        submit_textavatar.click(
+                                self.avatar_generator_by_text, #self.dummy_avatar_generator_by_text, 
                                 inputs, 
                                 [output_image, output_satus]
                                 )
@@ -210,7 +224,7 @@ class InterfaceModel():
 
                 inputs = [bio, voice_sample]
                 submit_persona.click(
-                                self.dummy_create_persona, 
+                                self.create_persona, #self.dummy_create_persona, 
                                 inputs, 
                                 []
                 )
@@ -233,14 +247,14 @@ class InterfaceModel():
 
                                     inputs = [text2speak]
                                     submit_gen_audio.click(
-                                        self.dummy_audio_generator, 
+                                        self.audio_generator_function, #self.dummy_audio_generator, 
                                         inputs, 
                                         [audio]
                                         )          
 
                                 inputs = [prompt, audio]
                                 submit_video.click(
-                                        self.dummy_video_generator, 
+                                        self.video_generator, #self.dummy_video_generator, 
                                         inputs, 
                                         [status_vg, out_video]
                                         )
@@ -279,12 +293,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_flux", type=str, default="./configs/pulid_config.yaml")
     parser.add_argument("--config_echo", type=str, default="./configs/prompts/animation_acc.yaml")
-    parser.add_argument("--port", type=int, default=8081, help="Port to use")
+    parser.add_argument("--port", type=int, default=8080, help="Port to use")
     args = parser.parse_args()
 
     processor = InterfaceModel(args)
     demo = processor.create_demo(args)
-    demo.launch(server_name='0.0.0.0', server_port=args.port)
+    demo.launch(server_name='0.0.0.0', server_port=args.port, share=True)
 
 
     

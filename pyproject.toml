@@ -11,9 +11,9 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
-torch = "2.4.1"
-torchvision = "0.19.1"
-torchaudio = "2.4.1"
+torch = "2.5.1"
+torchvision = "0.20.1"
+torchaudio = "2.5.1"
 transformers = "4.48.1"
 diffusers = "0.30.0"
 accelerate = "0.26.1"

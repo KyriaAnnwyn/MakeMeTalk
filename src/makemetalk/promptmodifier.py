@@ -10,7 +10,7 @@ class PromptModifier():
         )
         self.device = device
 
-        self.system_prompt = "You need to rewrite image prompt for diffusion generation. The output should be short, but contain all needed information"
+        self.system_prompt = "You need to rewrite image prompt for diffusion generation. The output should be short, but contain all needed information: prompt should aim at realistic portrait photo generation"
         self.get_gender_system = "Read the text prompt and determine if the main figure is male or female"
         self.sample_prompt = "portrait photo of a person"
 

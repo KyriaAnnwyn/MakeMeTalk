@@ -12,8 +12,11 @@ class AudioGenerator():
         self.device = device
         self.speaker = None
 
-    def update_speaker(self, sample_voice_file) -> None: 
-        wav, sampling_rate = torchaudio.load(sample_voice_file)
+    def update_speaker(self, sample_voice_file: str | tuple) -> None: 
+        if isinstance(sample_voice_file, str):
+            wav, sampling_rate = torchaudio.load(sample_voice_file)
+        else:
+            wav, sampling_rate = sample_voice_file[1], sample_voice_file[0]
         self.speaker = self.model.make_speaker_embedding(wav, sampling_rate)   
 
     def generate_audio_speech(self, text: str) -> str:
@@ -26,6 +29,20 @@ class AudioGenerator():
 
         os.makedirs("tmp", exist_ok=True)
         torchaudio.save("tmp/sample.wav", wavs[0], self.model.autoencoder.sampling_rate)
+
+        return "tmp/sample.wav"
+
+    def generate_audio_speech_tuple(self, text: str) -> str:
+        cond_dict = make_cond_dict(text=text, speaker=self.speaker, language="en-us")
+        conditioning = self.model.prepare_conditioning(cond_dict)
+
+        codes = self.model.generate(conditioning)
+
+        wavs = self.model.autoencoder.decode(codes).cpu()
+
+        os.makedirs("tmp", exist_ok=True)
+
+        return tuple(self.model.autoencoder.sampling_rate, wavs[0])
 
 if __name__ == "__main__":
     ag = AudioGenerator(device = "cuda")
