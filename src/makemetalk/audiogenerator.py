@@ -4,8 +4,10 @@ from zonos.model import Zonos
 from zonos.conditioning import make_cond_dict
 import os
 
+MODEL_PATH = "Zyphra/Zonos-v0.1-transformer" #"Zyphra/Zonos-v0.1-hybrid"
+
 class AudioGenerator():
-    def __init__(self, device: str, model_path = "Zyphra/Zonos-v0.1-hybrid"):
+    def __init__(self, device: str, model_path = MODEL_PATH):
         self.model = Zonos.from_pretrained(model_path, device=device)
         self.device = device
         self.speaker = None
