@@ -24,4 +24,11 @@ class AudioGenerator():
 
         os.makedirs("tmp", exist_ok=True)
         torchaudio.save("tmp/sample.wav", wavs[0], self.model.autoencoder.sampling_rate)
-    
+
+if __name__ == "__main__":
+    ag = AudioGenerator(device = "cuda")
+    ag.update_speaker(sample_voice_file="assets/sample_audio.wav")
+
+    ag.generate_audio_speech(text="I love cats. I have a beautiful cat. She likes to play.")
+
+   
