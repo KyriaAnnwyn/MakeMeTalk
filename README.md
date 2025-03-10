@@ -1,4 +1,7 @@
+```shell
 apt install -y espeak-ng
+apt install ffmpeg
+```
 
 ### Download ffmpeg-static
 Download and decompress [ffmpeg-static](https://www.johnvansickle.com/ffmpeg/old-releases/ffmpeg-4.4-amd64-static.tar.xz), then
