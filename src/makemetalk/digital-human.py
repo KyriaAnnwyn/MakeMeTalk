@@ -6,6 +6,7 @@ import os
 import numpy as np
 import cv2
 import torchaudio
+import torch
 
 from fluxgenerator import FluxGenerator, modify_postpic_prompt
 from speechanimator import setup_ffmpeg, SpeechAnimator
@@ -137,27 +138,45 @@ class InterfaceModel():
         status_str = f"Avatar generated for generated reference image. Appearance = {self.appearance}"
         return image, status_str
     
+    def convert_audio(self, audio: tuple) -> tuple:
+
+        sr, y = audio
+  
+        y = y.astype(np.float32)
+        y /= np.max(np.abs(y))
+        y = torch.from_numpy(y)
+        y = y.swapaxes(0,1)
+        return (sr, y)
+
     def create_persona(self, *args):
         bio = args[0]
         self.voice_sample = args[1]
         print(f"Loaded voice sample: {type(self.voice_sample)}")
+        self.voice_sample = self.convert_audio(self.voice_sample)
+        print(f"Voice sample: type = {type(self.voice_sample[1])}, {self.voice_sample[1].shape}, sample rate {self.voice_sample[0]}")
         torchaudio.save("tmp/voice_sample.wav", self.voice_sample[1], self.voice_sample[0])
+        
         self.audio_generator.update_speaker(self.voice_sample)
 
-        return
     
     def audio_generator_function(self, *args):
         text = args[0]
 
         gen_audio = self.audio_generator.generate_audio_speech(text=text)
+        #gen_audio = self.audio_generator.generate_audio_speech_tuple(text=text)
         return gen_audio
     
     def video_generator(self, *args):
         user_prompt = args[0]
         #in_audio_path = args[1]
         in_audio = args[1]
-        os.makedirs("tmp", exist_ok=True)
+
         in_audio_path = "tmp/in_audio.wav"
+        os.makedirs("tmp", exist_ok=True)
+
+        in_audio = self.convert_audio(in_audio)
+
+        print(f"In audio input to videogenerator = {in_audio}") 
         torchaudio.save(in_audio_path, in_audio[1], in_audio[0])
         out_fpath = "tmp/my_talking_story.mp4"
         os.makedirs("tmp", exist_ok=True)
@@ -168,6 +187,8 @@ class InterfaceModel():
                         id_embeddings=self.id_embeddings, 
                         uncond_id_embeddings=self.uncond_id_embeddings
             )
+        out_image.save("tmp/image2animate.jpg")
+        #cv2.imwrite("tmp/image2animate.jpg", out_image)
         self.speech_generator.run(out_image, in_audio_path, out_fpath)
         return f"Video generated", out_fpath
 
@@ -239,11 +260,11 @@ class InterfaceModel():
                             @gr.render(inputs=[mode], triggers=[mode.input])
                             def show_split(mode):
                                 if mode == "use audio":
-                                    audio = gr.Audio(label="audio file with speech", sources="upload")
+                                    audio = gr.Audio(label="audio file with speech", sources=["upload", "microphone"])
                                 else:
                                     text2speak = gr.Textbox(label="Text you want to speak", value='My cat came to me just recently, it was very strange, I was just walking down the street and when I approached the store I saw a black cat, he ran up to me and started purring.', interactive=True)
                                     submit_gen_audio = gr.Button("Generate Audio for the speech text")
-                                    audio = gr.Audio(label="audio file with speech")
+                                    audio = gr.Audio(label="speech audio")
 
                                     inputs = [text2speak]
                                     submit_gen_audio.click(

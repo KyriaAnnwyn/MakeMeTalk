@@ -18,7 +18,7 @@ H: 512
 L: 1200
 seed: 420
 facemusk_dilation_ratio: 0.1
-facecrop_dilation_ratio: 1.0
+facecrop_dilation_ratio: 0.9
 context_frames: 12
 context_overlap: 3
 cfg: 1.0
