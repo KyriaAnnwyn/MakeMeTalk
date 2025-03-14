@@ -79,7 +79,7 @@ class InterfaceModel():
     def dummy_create_persona(self, *args):
         bio = args[0]
         self.voice_sample = args[1]
-        return
+        return "Persona created"
     
 
     def dummy_audio_generator(self, *args):
@@ -149,6 +149,8 @@ class InterfaceModel():
         torchaudio.save("tmp/voice_sample.wav", self.voice_sample[1], self.voice_sample[0])
         
         self.audio_generator.update_speaker(self.voice_sample)
+
+        return "Persona created"
 
     
     def audio_generator_function(self, *args):
@@ -231,12 +233,13 @@ class InterfaceModel():
                 bio = gr.Textbox(label="Your interests, lifestyle, any necessary info about you", value='love cats', interactive=True)
                 voice_sample = gr.Audio(label="audio file with your voice", sources="upload")
                 submit_persona = gr.Button("Generate your Persona")
+                persona_creation_status = gr.Textbox(label="Persona creation status", value='Not created yet', interactive=False)
 
                 inputs = [bio, voice_sample]
                 submit_persona.click(
                                 self.create_persona, #self.dummy_create_persona, 
                                 inputs, 
-                                []
+                                [persona_creation_status]
                 )
                 
             with gr.Group():
