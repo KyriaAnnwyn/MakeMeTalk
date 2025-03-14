@@ -68,15 +68,9 @@ class InterfaceModel():
     def dummy_avatar_generator_by_text(self, *args):
         prompt = args[0]
         
-        #generate appearance for this prompt
         self.appearance = ""
-        #enhance prompt + appearance with details
-        #generate image for this prompt
         size = (w, h, channels) = (1024, 1024, 3)
         image = np.zeros(size, np.uint8)
-
-        #generate face embeddings
-        #self.id_embeddings, self.uncond_id_embeddings, self.gender = self.generator.generate_avatar_embedding(src_folder=[image])
 
         status_str = f"Avatar generated for generated reference image. Appearance = {self.appearance}"
         return image, status_str
@@ -93,7 +87,6 @@ class InterfaceModel():
         voice_sample = self.voice_sample
 
         gen_audio = "assets/sample_audio.wav"
-
         return gen_audio
     
 
@@ -153,7 +146,6 @@ class InterfaceModel():
         self.voice_sample = args[1]
         print(f"Loaded voice sample: {type(self.voice_sample)}")
         self.voice_sample = self.convert_audio(self.voice_sample)
-        print(f"Voice sample: type = {type(self.voice_sample[1])}, {self.voice_sample[1].shape}, sample rate {self.voice_sample[0]}")
         torchaudio.save("tmp/voice_sample.wav", self.voice_sample[1], self.voice_sample[0])
         
         self.audio_generator.update_speaker(self.voice_sample)
@@ -175,8 +167,6 @@ class InterfaceModel():
         os.makedirs("tmp", exist_ok=True)
 
         in_audio = self.convert_audio(in_audio)
-
-        print(f"In audio input to videogenerator = {in_audio}") 
         torchaudio.save(in_audio_path, in_audio[1], in_audio[0])
         out_fpath = "tmp/my_talking_story.mp4"
         os.makedirs("tmp", exist_ok=True)
@@ -187,8 +177,7 @@ class InterfaceModel():
                         id_embeddings=self.id_embeddings, 
                         uncond_id_embeddings=self.uncond_id_embeddings
             )
-        out_image.save("tmp/image2animate.jpg")
-        #cv2.imwrite("tmp/image2animate.jpg", out_image)
+        #out_image.save("tmp/image2animate.jpg")
         self.speech_generator.run(out_image, in_audio_path, out_fpath)
         return f"Video generated", out_fpath
 
