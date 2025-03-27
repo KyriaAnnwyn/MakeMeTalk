@@ -50,6 +50,9 @@ class PromptModifier():
 
         return "male" 
 
+    def generate_appearance4prompt(self, prompt: str) -> str:
+        pass
+    
 if __name__ == "__main__":
     pm = PromptModifier(device = "cuda")
 
