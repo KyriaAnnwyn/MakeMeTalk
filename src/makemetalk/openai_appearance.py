@@ -392,10 +392,44 @@ def get_appearance(id_image):
 
     return appearance_emb_text
 
+def generate_appearance_from_prompt(prompt: str):
+    tr = 0
+    success = False
+    while tr < NUM_TRIES and not success:
+        try:
+            resulting_json = _client.chat.completions.create(
+                #model="gpt-4o-mini-2024-07-18", 
+                model="gpt-4o-2024-05-13", 
+                response_model=PersonApperance,
+                messages=[
+                    {"role": "user", "content": [
+                        {
+                            "type": "text",
+                            "text": "You are portrait painter. Given the image of the person your goal is to carefully describe its appearance. Make description as exact as you can."
+                        },
+                        {
+                            "type": "text",
+                            "text": f"Use the information from this description: {prompt} to carefully fill in the attributes of the appearance, if no information can be obtained from the description imagine the person and fill the attributes from the image you have in your immagination or some random value. All the fields of the description should be filled"
+                        }
+                    ]
+                    }
+                ]
+            )
+            success = True
+        except Exception as e:
+            print(f"OpenAI appearance request failed: try {tr}, reason: {e}")
+            tr += 1
+
+    if success:
+        return json.loads(resulting_json.model_dump_json())
+    else:
+        return None
+
 
 if __name__ == "__main__":
-    image_path = "/home/docet/Pictures/PromowomanSources/1638098493_26-koshka-top-p-s-kotom-i-devushkoi-29.jpg"
+    image_path = "./assets/TestWomanAva/AdobeStock_296665491.jpeg"
 
-    result = get_description(image_path=image_path)
+    #result = get_description(image_path=image_path)
+    result = generate_appearance_from_prompt(prompt = "thin beautiful woman with red hair")
 
     print(result)
