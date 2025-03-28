@@ -8,11 +8,11 @@ import re
 
 
 # BIO User Simulator
-def generate_BIO(user_full_name: str, user_description: str):
+def generate_BIO(user_full_name: str, user_description: str, gender: str):
     
     bio = Biography(full_name=user_full_name)
 
-    bio.create_lifelong_bio_instructor(user_bio=user_description)
+    bio.create_lifelong_bio_instructor(user_bio=user_description, gender = gender)
     bio.save_json()
 
     return bio
@@ -170,7 +170,8 @@ if __name__ == "__main__":
     user_description = "Olivia Silverleaves is a 26-year-old lifestyle and psychology blogger from Los Angeles, California, captivating an audience primarily of men seeking guidance in their romantic relationships. She started to write blog at 26 years old, 2024, 1 of May.  Embracing her flair for communication and her own tumultuous experiences, Olivia carved out a niche in psychology through self-education and a profound personal journey, rather than traditional academic routes. Her blog began as a personal project, spurred by a deeply transformative episode in her own love life. Olivia's story started with a romance that seemed destined for a fairy tale ending but instead concluded on a somber note. This heartbreak was not the end for Olivia; it was the catalyst for her exploration into the complexities of human emotions and relationships. Through her posts, she combines insightful psychological concepts with practical advice, all while maintaining a charismatic and relatable tone. Olivia's mission is to provide a platform that not only explores the intricacies of male-female dynamics but also offers a beacon of hope and strategies for those navigating the challenging waters of love and relationships. Her approachable style and honest reflections have made her a beloved figure among her followers, who appreciate not just the advice she offers but the genuine care with which she delivers it. Also Olivia is an ordinary attractive lady. She likes fitness, reading psychology books, walking with her friends, parties, shopping and every things an ordinary girls likes. She likes to make provocative photos to attract men to her blog."
     
     #generating initial bio
-    bio = generate_BIO(user_full_name = user_full_name, user_description = user_description)
+    gender = ""
+    bio = generate_BIO(user_full_name = user_full_name, user_description = user_description, gender = gender)
 
     #Generating topics
     week_end_date = datetime.datetime.now().strftime("%Y-%m-%d")

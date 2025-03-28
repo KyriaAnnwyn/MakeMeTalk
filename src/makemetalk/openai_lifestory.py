@@ -22,8 +22,7 @@ class StoryInput(BaseModel):
 @tool(args_schema=StoryInput)
 def story_generation(user_full_name: str, topic: str) -> str:
     """if you need to write, create or generate story in Instagram."""
-    print(f"generate story message for {user_full_name} on topic {topic}")
-    return f"generate story text spoken from the author for {user_full_name} on topic {topic}, don't use hashtags and smiles. Put it between <story> and </story> tags. Generate a short image background description for this story. Put it between <bgr> and </bgr> tags"
+    return f"generate story text spoken from the author for {user_full_name} on topic {topic}, don't use hashtags and smiles. Put it between <story> and </story> tags. Generate a short (30 words) image background description for this story. Put it between <bgr> and </bgr> tags"
     
 class ReelsInput(BaseModel):
     user_full_name: str = Field(description="full name of user")
@@ -58,7 +57,6 @@ OPEN_AI_API_KEY = os.getenv("OPENAI_API_KEY")
 PROXY = os.getenv("OPENAI_PROXY_SOCKS")
 OPENAI_RESPONSE_TIMEOUT_SECONDS = 25
 
-#print(f"Proxy: {PROXY}, openai key {OPEN_AI_API_KEY}")
 if PROXY:
     _http_client = httpx.Client(
         proxies=PROXY, timeout=httpx.Timeout(OPENAI_RESPONSE_TIMEOUT_SECONDS)

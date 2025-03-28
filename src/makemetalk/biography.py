@@ -51,10 +51,10 @@ class LifeEpochsDescription(BaseModel):
 
 class BioEpochs(BaseModel):
     year_of_birth: Union[int, None] = Field(
-        description="Extract the year of birth o the personage", default=None
+        description="Extract the year of birth of the personage or come up with the appropriate year", default=None
     )
     location: Union[str, None] = Field(
-        description="Extract the living location of the personage", default=None
+        description="Extract the living location of the personage or come up with the suitable location", default=None
     )
     life_epochs: LifeEpochsDescription = Field(
         description="List of detailed personage life epochs description"
@@ -159,7 +159,7 @@ class Biography(object):
 
         print(f"Generated epochs:\n {result}")
 
-    def create_lifelong_bio_instructor(self, user_bio: str) -> None:
+    def create_lifelong_bio_instructor(self, user_bio: str, gender: str) -> None:
         global _client
         self.biography['biography_text'] = user_bio
         #create life epoch description
@@ -187,7 +187,7 @@ class Biography(object):
         r = json.loads(resulting_json.model_dump_json())
         self.biography["year_of_birth"] = r["year_of_birth"]
         self.biography["location"] = r["location"]
-        self.biography["gender"] = r["gender"]
+        self.biography["gender"] = r["gender"] if r["gender"] else gender
         self.biography["category"] = r["category"]
 
         for idx, el in enumerate(r["life_epochs"]["epoch_description"]):
@@ -320,6 +320,9 @@ class Biography(object):
 
     def get_existing_epoch(self, num: int):
         return self.biography[f"epoch_{num}"]
+    
+    def get_user_name(self):
+        return self.biography["full_name"]
 
     @staticmethod
     def year_to_pos(age_num: int):
