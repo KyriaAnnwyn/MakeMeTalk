@@ -1,3 +1,17 @@
+## MAKE ME TALK
+Using this application you can create your personage, customize appearance, voice and biography
+
+Then you can use you own ideas to make your talking stories or just in one click create idea and get the story based on your biography
+
+
+## RUN
+```shell
+python3 digital-human.py
+```
+
+
+## INSTALLATION
+
 ```shell
 apt install -y espeak-ng
 apt install ffmpeg
@@ -8,6 +22,19 @@ Download and decompress [ffmpeg-static](https://www.johnvansickle.com/ffmpeg/old
 ```
 export FFMPEG_PATH=/path/to/ffmpeg-4.4-amd64-static
 ```
+
+### Dependencies
+make virtual environment
+install poetry 
+and run poetry install
+
+```shell
+python3 - m venv .venv
+source .venv/bin/activate
+pip install poetry
+poetry install
+```
+
 
 ### Download pretrained weights
 
