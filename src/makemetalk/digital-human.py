@@ -17,6 +17,8 @@ from openai_appearance import get_appearance
 from operate_user_bio import generate_BIO
 from openai_lifestory import generate_story_prompts
 
+REAL_MODE = False
+
 DEFAULT_NEGATIVE_PROMPT = (
     'flaws in the eyes, flaws in the face, flaws, lowres, non-HDRi, low quality, worst quality,'
     'artifacts noise, text, watermark, glitch, deformed, mutated, ugly, disfigured, hands, '
@@ -49,10 +51,11 @@ class InterfaceModel():
         self.prompt_modifier = None 
         self.audio_generator = None
 
-        self.generator = FluxGenerator(config_flux.name, config_flux.device, config_flux.offload, config_flux.aggressive_offload, config_flux)
-        self.speech_generator = SpeechAnimator(config_echo)
-        self.prompt_modifier = PromptModifier(config_flux.device)
-        self.audio_generator = AudioGenerator(config_flux.device)
+        if REAL_MODE:
+            self.generator = FluxGenerator(config_flux.name, config_flux.device, config_flux.offload, config_flux.aggressive_offload, config_flux)
+            self.speech_generator = SpeechAnimator(config_echo)
+            self.prompt_modifier = PromptModifier(config_flux.device)
+            self.audio_generator = AudioGenerator(config_flux.device)
 
         self.appearance = ""
         self.id_embeddings = None
@@ -214,12 +217,18 @@ class InterfaceModel():
                                         face_images.append(face_image)
 
                             inputs = face_images + [use_appearance]
-                            submit_avatar.click(
-                                self.avatar_generator, #
-                                #self.dummy_avatar_generator, 
-                                inputs, 
-                                output
-                                )
+                            if REAL_MODE:
+                                submit_avatar.click(
+                                    self.avatar_generator, 
+                                    inputs, 
+                                    output
+                                    )
+                            else:
+                                submit_avatar.click(
+                                    self.dummy_avatar_generator, 
+                                    inputs, 
+                                    output
+                                    )
             
                         use_appearance = gr.Checkbox(label="Use OpenAI to generate more accurate appearance")
                         submit_avatar = gr.Button("Generate Avatar Embedding")
@@ -231,12 +240,18 @@ class InterfaceModel():
                         output_image = gr.Image(label=f"Genrated ID image", type="numpy", height=256, interactive=False)
 
                         inputs = [prompt]
-                        submit_textavatar.click(
-                                self.avatar_generator_by_text, #
-                                #self.dummy_avatar_generator_by_text, 
-                                inputs, 
-                                [output_image, output_satus]
-                                )
+                        if REAL_MODE:
+                            submit_textavatar.click(
+                                    self.avatar_generator_by_text, 
+                                    inputs, 
+                                    [output_image, output_satus]
+                                    )
+                        else:
+                            submit_textavatar.click(
+                                    self.dummy_avatar_generator_by_text, 
+                                    inputs, 
+                                    [output_image, output_satus]
+                                    )
                         
                 persona_name = gr.Textbox(label="Your name", value="Olivia Silverleaves", interactive=True)
                 bio = gr.Textbox(label="Your interests, lifestyle, any necessary info about you", value=SAMPLE_BIO, interactive=True)
@@ -245,12 +260,18 @@ class InterfaceModel():
                 persona_creation_status = gr.Textbox(label="Persona creation status", value='Not created yet', interactive=False)
 
                 inputs = [bio, voice_sample, persona_name]
-                submit_persona.click(
-                                self.create_persona, #
-                                #self.dummy_create_persona, 
-                                inputs, 
-                                [persona_creation_status]
-                )
+                if REAL_MODE:
+                    submit_persona.click(
+                        self.create_persona,
+                        inputs, 
+                        [persona_creation_status]
+                    )
+                else:
+                    submit_persona.click(
+                        self.dummy_create_persona, 
+                        inputs, 
+                        [persona_creation_status]
+                    )
                 
             with gr.Group():
                 gr.Markdown(_HEADER_STORY_)
@@ -274,12 +295,18 @@ class InterfaceModel():
                             audio = gr.Audio(label="speech audio")
 
                             inputs = [text2speak]
-                            submit_gen_audio.click(
-                                self.audio_generator_function, #
-                                #self.dummy_audio_generator, 
-                                inputs, 
-                                [audio]
-                            )
+                            if REAL_MODE:
+                                submit_gen_audio.click(
+                                    self.audio_generator_function,
+                                    inputs, 
+                                    [audio]
+                                )
+                            else:
+                                submit_gen_audio.click(
+                                    self.dummy_audio_generator, 
+                                    inputs, 
+                                    [audio]
+                                )
 
                             video_inputs = [prompt, audio]
                            
@@ -297,12 +324,18 @@ class InterfaceModel():
                                     audio = gr.Audio(label="speech audio")
 
                                     inputs = [text2speak]
-                                    submit_gen_audio.click(
-                                        self.audio_generator_function, #                                        
-                                        #self.dummy_audio_generator, 
-                                        inputs, 
-                                        [audio]
-                                        )          
+                                    if REAL_MODE:
+                                        submit_gen_audio.click(
+                                            self.audio_generator_function,                                        
+                                            inputs, 
+                                            [audio]
+                                            ) 
+                                    else:  
+                                        submit_gen_audio.click(                                     
+                                            self.dummy_audio_generator, 
+                                            inputs, 
+                                            [audio]
+                                            )        
 
                                 video_inputs = [prompt, audio]
                             
@@ -312,12 +345,18 @@ class InterfaceModel():
                         out_video = gr.PlayableVideo(label="Output", interactive=False)
                         status_vg = gr.Textbox(label="Avatar generation status", interactive=False)
 
-                        submit_video.click(
-                            self.video_generator, #
-                            #self.dummy_video_generator, 
-                            video_inputs, 
-                            [status_vg, out_video]
-                        )
+                        if REAL_MODE:
+                            submit_video.click(
+                                self.video_generator,
+                                video_inputs, 
+                                [status_vg, out_video]
+                            )
+                        else:
+                            submit_video.click(
+                                self.dummy_video_generator, 
+                                video_inputs, 
+                                [status_vg, out_video]
+                            )
 
         return demo
 
